@@ -15,6 +15,7 @@ class InstallRefresh extends Command
      */
     protected $signature = 'install:refresh {--admin-password=123456}';
 
+
     /**
      * The console command description.
      *

@@ -42,7 +42,8 @@ RUN php artisan config:cache
 # Optimizing Route loading
 RUN php artisan route:cache
 # Optimizing View loading
-RUN php artisan view:cache
+RUN php artisan view:cache 
+#ENTRYPOINT ./entry_artisan.sh
 #RUN php -S localhost:8080
 RUN chmod -R 777 storage && chmod -R 777 bootstrap/cache
 #RUN php artisan install --db-host="db" --db-port=3306 --db-name="akaunting" --db-username="root" --db-password="" --admin-email="admin@company.com" --admin-password="123456"

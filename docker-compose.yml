@@ -6,10 +6,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: php
     container_name: app
     restart: always 
     tty: true
+    #entrypoint: sh -c "sleep 30 && php artisan install --db-host=${DB_HOST} --db-port=${DB_PORT} --db-name=${DB_DATABASE} --db-username=${DB_USERNAME} --db-password=${DB_PASSWORD} --db-prefix=${DB_PREFIX} --admin-email='${ADMIN_USER}' --admin-password='${ADMIN_PASSWORD}'"
     ports:
       - "80:80"    
     networks:
@@ -17,15 +17,14 @@ services:
     depends_on: 
       - db
     volumes:
-      - ./data:/srv                
-    #command: php artisan install --db-host=${DB_HOST} --db-port=${DB_PORT} --db-name=${DB_DATABASE} --db-username=${DB_USERNAME} --db-password=${DB_PASSWORD} --admin-email=${ADMIN_USER} --admin-password=${ADMIN_PASSWORD}
+      - ./data:/srv                  
     env_file: .env
 
   #MySQL Service
   db:
     image: mysql:5.7.22
     container_name: db
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password    
     restart: unless-stopped
     tty: true
     ports:
