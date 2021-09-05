@@ -14,6 +14,9 @@ Akaunting is a free, open source and online accounting software designed for sma
 
 project contains ```Dockerfile``` and ```docker-compose.yml``` files to deplay project on the cloud.
 
+to compose containers
+```docker-compose up --detach```
+
 after successfully building image yo have to migrate database
 #### Migrating databse
 
