@@ -10,7 +10,7 @@ Akaunting is a free, open source and online accounting software designed for sma
 * [Translations](https://crowdin.com/project/akaunting) - Help us translate Akaunting
 * [Repo](https://github.com/akaunting/akaunting) - Github  
 
-## Installation (modified by Asliddin Oripov)
+## Installation
 
 project contains ```Dockerfile``` and ```docker-compose.yml``` files to deplay project on the cloud.
 
