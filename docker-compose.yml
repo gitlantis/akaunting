@@ -9,7 +9,6 @@ services:
     container_name: app
     restart: always 
     tty: true
-    #entrypoint: sh -c "sleep 30 && php artisan install --db-host=${DB_HOST} --db-port=${DB_PORT} --db-name=${DB_DATABASE} --db-username=${DB_USERNAME} --db-password=${DB_PASSWORD} --db-prefix=${DB_PREFIX} --admin-email='${ADMIN_USER}' --admin-password='${ADMIN_PASSWORD}'"
     ports:
       - "80:80"    
     networks:
