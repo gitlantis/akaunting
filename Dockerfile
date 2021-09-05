@@ -24,7 +24,7 @@ RUN docker-php-ext-install \
         fileinfo \
         json \
         mbstring \
-        pdo_mysql \        
+        pdo_mysql \
         tokenizer \
         xml
 
@@ -35,7 +35,8 @@ ENV WEB_DOCUMENT_ROOT /app
 ENV APP_ENV production
 WORKDIR /app
 COPY . .
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+RUN composer install --no-plugins --no-scripts --no-interaction --optimize-autoloader --no-dev
 # Optimizing Configuration loading
 RUN php artisan config:cache
 # Optimizing Route loading
@@ -43,6 +44,6 @@ RUN php artisan route:cache
 # Optimizing View loading
 RUN php artisan view:cache
 #RUN php -S localhost:8080
-#RUN php artisan install --db-name="akaunting" --db-username="root" --db-password="" --admin-email="admin" --admin-password="admin"
-RUN chmod -R a+x storage && chmod -R a+x bootstrap/cache
-RUN chown -R a+x akaunting:akaunting .
+RUN chmod -R 777 storage && chmod -R 777 bootstrap/cache
+#RUN php artisan install --db-host="db" --db-port=3306 --db-name="akaunting" --db-username="root" --db-password="" --admin-email="admin@company.com" --admin-password="123456"
+#RUN chown nginx:nginx .

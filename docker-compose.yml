@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     #image: php
     container_name: app
-    restart: unless-stopped
+    restart: always 
     tty: true
     ports:
       - "80:80"    
@@ -16,16 +16,10 @@ services:
       - app-network
     depends_on: 
       - db
-    links:
-      - db
-    environment: 
-      DB_CONNECTION: mysql
-      DB_HOST: localhost
-      DB_PORT: 3306
-      DB_DATABASE: akaunting
-      DB_USERNAME: root
-      DB_PASSWORD: ""
-      DB_PREFIX: ith_  
+    volumes:
+      - ./data:/srv                
+    #command: php artisan install --db-host=${DB_HOST} --db-port=${DB_PORT} --db-name=${DB_DATABASE} --db-username=${DB_USERNAME} --db-password=${DB_PASSWORD} --admin-email=${ADMIN_USER} --admin-password=${ADMIN_PASSWORD}
+    env_file: .env
 
   #MySQL Service
   db:
@@ -36,19 +30,17 @@ services:
     tty: true
     ports:
       - "3306:3306"
-    environment:
-      MYSQL_DATABASE: "akaunting"
-      #MYSQL_ROOT_PASSWORD: ""
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+    env_file: .env.mysql 
+    volumes:
+      - ./data:/srv
+      - ./data/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf       
     networks:
       - app-network
 
 #Docker Networks
 networks:
   app-network:
-    driver: bridge
+    driver: akaunting-network
 #Volumes
 volumes:
   dbdata:

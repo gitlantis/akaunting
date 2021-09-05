@@ -261,7 +261,7 @@ class Installer
         $env = [
             'APP_LOCALE'            =>  session('locale'),
             'APP_INSTALLED'         =>  'true',
-            'APP_DEBUG'             =>  'false',
+            'APP_DEBUG'             =>  'true',
             'FIREWALL_ENABLED'      =>  'true',
             'MODEL_CACHE_ENABLED'   =>  'true',
         ];
