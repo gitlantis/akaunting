@@ -24,4 +24,4 @@ Get app container ID or name
 ```docker ps```
 
 migrate database
-```docker exec -it [container_id] php artisan install --db-host=db --db-port=3306 --db-name=akaunting --db-username=root --db-password="" --db-prefix=cxm_ --admin-email="admin@company.com" --admin-password="123456""```
+```docker exec -it [container_id] php artisan install --db-host=db --db-port=3306 --db-name=akaunting --db-username=root --db-password="" --db-prefix=cxm_ --admin-email="admin@company.com" --admin-password="123456""``` 

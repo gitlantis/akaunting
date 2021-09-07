@@ -37,8 +37,9 @@ services:
 
 #Docker Networks
 networks:
-  app-network:
-    driver: akaunting-network
+  app-network:  
+    driver: bridge
+
 #Volumes
 volumes:
   dbdata:
