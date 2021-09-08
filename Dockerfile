@@ -23,3 +23,4 @@ RUN php artisan config:cache
 RUN php artisan route:cache
 RUN php artisan view:cache 
 RUN chmod -R 777 storage && chmod -R 777 bootstrap/cache
+#CMD php artisan serve --host=0.0.0.0 --port=80
