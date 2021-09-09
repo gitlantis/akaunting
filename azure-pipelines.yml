@@ -28,6 +28,17 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: DownloadSecureFile@1
+      name: env_files
+      inputs: 
+        secureFile: '.env'
+    
+    - script: |       
+       ls -l -a $(env_files.secureFilePath)
+       cp $(env_files.secureFilePath) .
+       cat .env
+       ls -l -a
+    
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -35,8 +46,9 @@ stages:
         #repository: $(imageRepository)
         repository: 'akaunting'
         #dockerfile: $(dockerfilePath)
-        Dockerfile: '**/Dockerfile'
+        Dockerfile: '**/Dockerfile'        
         #containerRegistry: $(dockerRegistryServiceConnection)
-        containerRegistry: 'Azure container'
+        containerRegistry: 'Container Registry'
         tags: |
           $(tag)
+    

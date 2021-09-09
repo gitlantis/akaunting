@@ -3,34 +3,15 @@
 namespace App\Jobs\Common;
 
 use App\Abstracts\Job;
+use App\Interfaces\Job\HasOwner;
+use App\Interfaces\Job\HasSource;
+use App\Interfaces\Job\ShouldCreate;
 use App\Models\Common\Widget;
 
-class CreateWidget extends Job
+class CreateWidget extends Job implements HasOwner, HasSource, ShouldCreate
 {
-    protected $widget;
-
-    protected $request;
-
-    /**
-     * Create a new job instance.
-     *
-     * @param  $request
-     */
-    public function __construct($request)
+    public function handle(): Widget
     {
-        $this->request = $this->getRequestInstance($request);
-        $this->request->merge(['created_by' => user_id()]);
-    }
-
-    /**
-     * Execute the job.
-     *
-     * @return Widget
-     */
-    public function handle()
-    {
-        $this->request['enabled'] = $this->request['enabled'] ?? 1;
-
         \DB::transaction(function () {
             $this->widget = Widget::create($this->request->all());
         });

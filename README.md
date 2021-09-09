@@ -30,7 +30,7 @@ Get app container ID or name
 ```docker ps```
 
 migrate database
-```docker exec -it [container_id] php artisan install --db-host=db --db-port=3306 --db-name=akaunting --db-username=root --db-password="" --db-prefix=cxm_ --admin-email="admin@company.com" --admin-password="123456""```
+```docker exec -it [container_id] php artisan install --db-host=db --db-port=3306 --db-name=akaunting --db-username=root --db-password="" --db-prefix=cxm_ --admin-email="admin@company.com" --admin-password="123456"```
 
 ```push``` repository to [dev.azure.com](dev.azure.com)
 
@@ -140,3 +140,41 @@ try to rebuild pipeline next run will completed successfully
 ![App Service](./assets/job_screen.png)
 
 http://akaunting.azurewebsites.net/
+
+#### 6. Migrating database
+
+Create MySQL database into Service Group
+
+![App Service](./assets/azure_my_sql.png)
+
+configure it for your need
+
+![App Service](./assets/my_sql_conf.png)
+
+after saving you have to connection security 
+
+make sure to migrate database you must allow your ISP ip to firewall
+
+![App Service](./assets/my_sql_access.png)
+
+add .env file to security file for security resons
+
+![App Service](./assets/security.png)
+
+after including you must configure ```azure-pipelines.yml``` to copy this ```.env``` file to app diraectory
+
+run ```php artisan install --db-host=azure_mysql --db-port=3306 --db-name=akaunting --db-username=root --db-password="" --db-prefix=cxm_ --admin-email="admin@company.com" --admin-password="123456"``` for mysql database migration 
+
+after migration you can log in to service with admin password of platform 
+
+```sh
+admin@company.com
+123456
+```
+some javascript files were missing, 
+
+![App Service](./assets/final_result.png)
+
+and this is our final deployment result after fix
+
+![App Service](./assets/final_result01.png)

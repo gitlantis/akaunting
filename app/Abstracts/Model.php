@@ -2,8 +2,11 @@
 
 namespace App\Abstracts;
 
+use App\Events\Common\SearchStringApplied;
+use App\Events\Common\SearchStringApplying;
 use App\Traits\DateTime;
 use App\Traits\Owners;
+use App\Traits\Sources;
 use App\Traits\Tenants;
 use GeneaLabs\LaravelModelCaching\Traits\Cachable;
 use Illuminate\Database\Eloquent\Model as Eloquent;
@@ -14,7 +17,7 @@ use Lorisleiva\LaravelSearchString\Concerns\SearchString;
 
 abstract class Model extends Eloquent implements Ownable
 {
-    use Cachable, DateTime, Owners, SearchString, SoftDeletes, Sortable, Tenants;
+    use Cachable, DateTime, Owners, SearchString, SoftDeletes, Sortable, Sources, Tenants;
 
     protected $tenantable = true;
 
@@ -115,9 +118,7 @@ abstract class Model extends Eloquent implements Ownable
     {
         $request = request();
 
-        $search = $request->get('search');
-
-        $query->usingSearchString($search)->sortable($sort);
+        $query->usingSearchString()->sortable($sort);
 
         if ($request->expectsJson() && $request->isNotApi()) {
             return $query->get();
@@ -126,6 +127,15 @@ abstract class Model extends Eloquent implements Ownable
         $limit = (int) $request->get('limit', setting('default.list_limit', '25'));
 
         return $query->paginate($limit);
+    }
+
+    public function scopeUsingSearchString($query)
+    {
+        event(new SearchStringApplying($query));
+
+        $this->getSearchStringManager()->updateBuilder($query, request('search'));
+
+        event(new SearchStringApplied($query));
     }
 
     /**
@@ -209,6 +219,11 @@ abstract class Model extends Eloquent implements Ownable
         }
 
         return $query->whereIn($this->table . '.contact_id', (array) $contacts);
+    }
+
+    public function scopeSource($query, $source)
+    {
+        return $query->where($this->table . '.created_from', $source);
     }
 
     public function scopeIsOwner($query)

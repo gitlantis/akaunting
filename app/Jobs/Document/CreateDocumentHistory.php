@@ -3,9 +3,13 @@
 namespace App\Jobs\Document;
 
 use App\Abstracts\Job;
+use App\Interfaces\Job\HasOwner;
+use App\Interfaces\Job\HasSource;
+use App\Interfaces\Job\ShouldCreate;
+use App\Models\Document\Document;
 use App\Models\Document\DocumentHistory;
 
-class CreateDocumentHistory extends Job
+class CreateDocumentHistory extends Job implements HasOwner, HasSource, ShouldCreate
 {
     protected $document;
 
@@ -13,26 +17,16 @@ class CreateDocumentHistory extends Job
 
     protected $description;
 
-    /**
-     * Create a new job instance.
-     *
-     * @param  $document
-     * @param  $notify
-     * @param  $description
-     */
-    public function __construct($document, $notify = 0, $description = null)
+    public function __construct(Document $document, $notify = 0, $description = null)
     {
         $this->document = $document;
         $this->notify = $notify;
         $this->description = $description;
+
+        parent::__construct($document, $notify, $description);
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return DocumentHistory
-     */
-    public function handle()
+    public function handle(): DocumentHistory
     {
         $description = $this->description ?: trans_choice('general.payments', 1);
 
@@ -43,6 +37,8 @@ class CreateDocumentHistory extends Job
             'status' => $this->document->status,
             'notify' => $this->notify,
             'description' => $description,
+            'created_from' => source_name(),
+            'created_by' => user_id(),
         ]);
 
         return $document_history;

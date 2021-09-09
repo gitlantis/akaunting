@@ -3,35 +3,30 @@
 namespace App\Jobs\Document;
 
 use App\Abstracts\Job;
+use App\Interfaces\Job\HasOwner;
+use App\Interfaces\Job\HasSource;
+use App\Interfaces\Job\ShouldCreate;
+use App\Models\Document\Document;
 use App\Models\Document\DocumentItem;
 use App\Models\Document\DocumentItemTax;
 use App\Models\Setting\Tax;
 use Illuminate\Support\Str;
 
-class CreateDocumentItem extends Job
+class CreateDocumentItem extends Job implements HasOwner, HasSource, ShouldCreate
 {
     protected $document;
 
     protected $request;
 
-    /**
-     * Create a new job instance.
-     *
-     * @param  $document
-     * @param  $request
-     */
-    public function __construct($document, $request)
+    public function __construct(Document $document, $request)
     {
         $this->document = $document;
         $this->request = $request;
+
+        parent::__construct($document, $request);
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return DocumentItem
-     */
-    public function handle()
+    public function handle(): DocumentItem
     {
         $item_id = !empty($this->request['item_id']) ? $this->request['item_id'] : 0;
         $precision = config('money.' . $this->document->currency_code . '.precision');
@@ -189,6 +184,8 @@ class CreateDocumentItem extends Job
         $this->request['discount_type'] = !empty($this->request['discount_type']) ? $this->request['discount_type'] : 'percentage';
         $this->request['discount_rate'] = !empty($this->request['discount']) ? $this->request['discount'] : 0;
         $this->request['total'] = round($item_amount, $precision);
+        $this->request['created_from'] = source_name();
+        $this->request['created_by'] = user_id();
 
         $document_item = DocumentItem::create($this->request);
 
@@ -204,6 +201,8 @@ class CreateDocumentItem extends Job
             foreach ($item_taxes as $item_tax) {
                 $item_tax['document_item_id'] = $document_item->id;
                 $item_tax['amount'] = round(abs($item_tax['amount']), $precision);
+                $item_tax['created_from'] = $this->request['created_from'];
+                $item_tax['created_by'] = $this->request['created_by'];
 
                 DocumentItemTax::create($item_tax);
             }

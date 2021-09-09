@@ -11,36 +11,15 @@ services:
     tty: true
     ports:
       - "80:80"    
-    networks:
-      - app-network
-    depends_on: 
-      - db
     volumes:
       - ./data:/srv                  
-    env_file: .env
-
-  #MySQL Service
-  db:
-    image: mysql:5.7.22
-    container_name: db
-    command: --default-authentication-plugin=mysql_native_password    
-    restart: unless-stopped
-    tty: true
-    ports:
-      - "3306:3306"
-    env_file: .env.mysql 
-    volumes:
-      - ./data:/srv
-      - ./data/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf       
     networks:
       - app-network
+    env_file: .env  
 
 #Docker Networks
 networks:
   app-network:  
-    driver: bridge
+    driver: host
 
-#Volumes
-volumes:
-  dbdata:
-    driver: local
+ 

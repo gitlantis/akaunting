@@ -22,5 +22,6 @@ RUN composer install --no-plugins --no-scripts --no-interaction --optimize-autol
 RUN php artisan config:cache
 RUN php artisan route:cache
 RUN php artisan view:cache 
-RUN chmod -R 777 storage && chmod -R 777 bootstrap/cache
-#CMD php artisan serve --host=0.0.0.0 --port=80
+#ENTRYPOINT [ "./data/entrypoint.sh" ]
+RUN chmod -R 777 storage && chmod -R 777 bootstrap/cache && chmod -R 777 public 
+

@@ -5,7 +5,7 @@ return [
     'profile'               => 'Profile',
     'logout'                => 'Logout',
     'login'                 => 'Login',
-    'login_to'              => 'Login to start your session!',
+    'login_to'              => 'Login to start your session',
     'remember_me'           => 'Remember Me',
     'forgot_password'       => 'I forgot my password',
     'reset_password'        => 'Reset Password',
