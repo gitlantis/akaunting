@@ -33,11 +33,8 @@ stages:
       inputs: 
         secureFile: '.env'
     
-    - script: |       
-       ls -l -a $(env_files.secureFilePath)
-       cp $(env_files.secureFilePath) .
-       cat .env
-       ls -l -a
+    - script: |           
+        cp $(env_files.secureFilePath) .    
     
     - task: Docker@2
       displayName: Build and push an image to container registry

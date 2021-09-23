@@ -85,7 +85,7 @@
 # Homestead.yaml
 # npm-debug.log
 .env
-.env.example
+#.env.example
 # robots.txt
 # _ide_helper.php
 # _ide_helper_models.php

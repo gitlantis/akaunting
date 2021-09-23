@@ -1,0 +1,24 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: akaunting 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: akaunting
+  template:
+    metadata:
+      labels:
+        app: akaunting 
+    spec:
+      containers:
+        - name: akaunting 
+          image: akaunting.azurecr.io/akaunting
+          ports:
+          - containerPort: 80
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 250m

@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: akaunting-hpa
+  namespace: default
+spec:  
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: akaunting
+  maxReplicas: 10
+  minReplicas: 1 
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 5

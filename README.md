@@ -178,3 +178,293 @@ some javascript files were missing,
 and this is our final deployment result after fix
 
 ![App Service](./assets/final_result01.png)
+
+#### 7. Backuping database
+
+for this process we have to:
+1. create VM to run ```mysqldump``` command job script is inside of ```data/muskl_backup.sh
+2. create ```storage account``` to store backups
+3. join them together
+##### 7.1. create VM
+
+![VM config](./assets/vm_icon.png)
+
+configure it
+
+![VM config](./assets/vm_create.png)
+
+to connect vm I am using ```ssh``` key you can use login and password
+leave other settings as default, download ssh key after generation completed.
+
+connect to VM via SSh
+and install ```mysql-client``` and azure cli
+
+```sh
+sudo apt update 
+sudo apt install mysql-client
+sudo apt install azure-cli
+```
+
+##### 7.2. create storage account
+
+![VM config](./assets/storage_account.png)
+
+configure it
+
+![VM config](./assets/stor_acc_conf.png)
+
+you can leave other settings to default
+
+nest step is we must add ```file share``` to this service
+
+select ```file shares``` from left side menu
+
+![VM config](./assets/fileshare.png)
+
+we will link to this file share from our VM.
+
+to link to this ```file share``` go to fileshare we have created,
+and press ```connect``` button go to Linux and copy it into vm
+
+![VM config](./assets/fileshare_script.png)
+
+you can see example script inside of ```data/vmfiles.sh``` file
+
+##### 7.3. join them together
+
+I am going to join this services to work together
+in the ```data/muscle_backup.sh``` script file you can find example to backup mysql data, just provide your own connection credentials.
+
+to reduce price ```muscle_backup.sh``` used azure vm shutting down command after complating task
+
+```az vm deallocate -g akaunting-rg -n akauntvm```
+
+to integrate you have to integrate cli with azure 
+```az login```
+
+![VM config](./assets/az_login.png)
+
+to test this script just run script
+
+```sh ./muscle_backup.sh```
+
+![VM config](./assets/runscript.png)
+
+backup file will be stored into ```$year/$month/$day/$hour/back_[timastamp].sql```
+
+![VM config](./assets/backup_fileshare.png)
+
+#### we must set this script into ```crontab``` jobs
+
+open crontab job 
+```crontab -e```
+
+add 
+
+```0 0 * * * sh /home/azureuser/muscle_backup.sh >> /home/azureuser/backup.log```
+
+this will run job every 00:00 by UTC
+
+for now, we have to schedule vm turn on 20mis before running our job.
+
+find ```Logic App``` and press ```+ Add``` button
+
+![VM config](./assets/logic_apps.png)
+
+![VM config](./assets/logic_app_conf.png)
+
+when it is created go to resource
+
+![VM config](./assets/logic_app_resource.png)
+
+select ```Recurrance```
+
+![VM config](./assets/vm_start.png)
+
+
+### 8. Kubernets(fixed scale)
+
+#### 8.1 Kubernets integration into DevOps Service
+Open Kubernets reource
+
+![Kubernets config](./assets/kubernets_icon.png)
+
+press ```+ Create``` dropdown ```+ Add Kubernets Cluster```
+
+set ```Rsource group```, ```Kubernetes cluster name```, change ```Node size```
+and set scale method to ```Manual```
+
+![Kubernets config](./assets/kuber_config.png)
+
+set other parameters as default
+and ```Create```
+
+![Kubernets config](./assets/kuber_service_conn.png)    
+
+go to azure DevOps service 
+and create pipeline for ```Kubernets```
+
+**Note**: in the resource group yo must have container registery to push and pull container image
+
+![Kubernets config](./assets/kuber_pipe.png)
+
+just save yaml file for now
+we have to add secure files into it
+
+you can find yaml azure compose file into ```azure-pipelines-kuber.yml```
+after saveing run pipeline.
+
+when deploying complated,
+We must get ```Public IP``` of ```Nodes```
+
+go to azure command line tool
+
+```sh
+az login
+#do not forget path of credentials, we will use it in kubernets dashboard
+az aks get-credentials --resource-group akaunting-rg --name akaunt-kube
+#get pods
+kubectl get pods
+```
+
+![Kubernets config](./assets/pods_list.png)
+
+```
+#in our case pod name starts with 'acaunting'
+kubectl get service akaunting --watch
+```
+
+![Kubernets config](./assets/pod_ip.png)
+
+![Kubernets config](./assets/pod_result.png)
+
+pod connects to our MySQL database and our result is:
+
+![Kubernets config](./assets/pod_result_conn.png)
+
+#### 8.2 Kubernets Monnitoring tool
+
+Kubernets have own dashboard to monnitor Pods and Nodes
+
+type ```kubectl proxy``` to console and go to following url
+
+[http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/)
+
+**if you get Json failure text**
+```kubernets-dashboard``` have not installed
+
+you have to install ```kubernets-dashboard```
+
+```sh
+#create role to bind dashboard with kubernets
+kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard --user=clusterUser
+#apply kubernets-dashboard configuration
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
+
+```
+
+try to reconnect dashboard
+
+```kubectl proxy```
+
+connecting to resource
+
+![Kubernets config](./assets/kuber_dash.png)
+
+after signing in:
+
+![Kubernets config](./assets/kuber_dash_ivew.png)
+
+if you want to reduce cost of service you can stop kubernet temporarly
+
+```sh
+#stop kubernet
+az aks stop --resource-group akaunting-rg --name akaunt-kube
+#start kubernet
+az aks start --resource-group akaunting-rg --name akaunt-kube 
+```
+
+### 8. Kubernets(Horizontal pod autoscaling)
+
+autoscaling deployment scripts are inside of ```minifests_hpa``` folder.
+```azure-pipelines-hpa.yml``` for azure pipeline 
+
+I am using ```slowhttptest``` to test load to server, 
+
+this will create 1000 connctions 
+
+```slowhttptest -c 1000 -H -g -o outputfile -i 10 -r 200 -t GET -u http://13.88.222.185 -p 2```
+
+![Kubernets config](./assets/kali_request_test.png)
+
+500 milicore
+
+![Kubernets config](./assets/500_millicore.png)
+
+creating next node to move pod to next node
+
+![Kubernets config](./assets/moving_to_next_node_container.png)
+
+```sh
+kubectl get all # to get all namespaces
+kubectl get hpa -w # horizontal pod autoscalors
+kubectl get pods # pods list
+kubectl top pods # pods with resource statistics
+kubectl get nodes # nodes list 
+kubectl get deployments #deployments list
+```
+
+### 9. Web hook
+
+I am using [pipedream.com](pipedream.com) service to get notifications
+
+![Kubernets config](./assets/webhook.png)
+
+here is example of webhook configuration
+we will send result to our web listener on git push for our specified repository
+
+![Kubernets config](./assets/webhook_conf.png)
+
+create webhook listener in [pipedream.com](pipedream.com)
+
+![Kubernets config](./assets/webhook_request.png)
+
+our service ready and listening now
+
+copy http listener link in the textbox
+
+![Kubernets config](./assets/webhook_link.png)
+
+first time to check connection you can use Test button.
+
+In the following you can see result after push
+
+![Kubernets config](./assets/webhook_result.png)
+
+### 10. Logging
+
+Azure supports build in logging system,
+In the following image you can see kubernets logs
+
+![Kubernets config](./assets/log_filter.png)
+
+Queries will make using Kusto query language.
+
+In the following query you can filter ```ContainerLogs``` by
+field ```LogEntry``` by containing keywoard ```[php-fpm:access]```
+and executed commands ```TimeOfCommand``` in last 24 hour,
+query takes only ```100``` log results 
+
+```sh
+let FindString = "[php-fpm:access]";
+ContainerLog 
+| where LogEntry has FindString 
+| where TimeOfCommand > ago(24h)
+|take 100
+```
+
+lets put script into query screen and test it
+
+![Kubernets config](./assets/log_result.png)
+
+this is our result
